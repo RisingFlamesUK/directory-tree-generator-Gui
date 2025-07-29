@@ -110,7 +110,7 @@ h1 {
 /* Layout for rows of buttons, allowing wrapping */
 .button-group-row {
     display: flex;
-    justify-content: space-between; /* Space out items */
+    justify-content:space-between; /* Space out items */
     margin-bottom: 15px;
     gap: 10px;
     flex-wrap: wrap; /* Allows buttons to wrap to next line on smaller screens */
@@ -126,6 +126,57 @@ h1 {
 .icon-btn {
     padding: 10px 12px; /* Slightly different padding for icons */
     font-size: 1.1rem;
+}
+
+/* Style for active/pressed buttons in the output section */
+.button-group-row .btn.active {
+    background-color: #0056b3; /* Darker blue for a pressed look */
+    color: #fff; /* White text */
+    border-color: #0056b3; /* Matching border color */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); /* Inset shadow for depth */
+    cursor: not-allowed; /* Indicate it's disabled/active */
+    opacity: 0.9; /* Slightly less opaque */
+}
+
+/* Ensure active button doesn't change much on hover */
+.button-group-row .btn.active:hover {
+    background-color: #0056b3;
+    color: #fff;
+    border-color: #0056b3;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Messages */
+.message-container {
+    padding: 12px 20px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    font-weight: bold;
+    text-align: center;
+    color: white; /* Default text color for messages */
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.message-container.show {
+    display: block; /* Show the container */
+    opacity: 1;
+}
+
+/* Specific styles for different message types */
+.message-container.error {
+    background-color: #dc3545; /* Bootstrap 'danger' red */
+}
+
+.message-container.success {
+    background-color: #28a745; /* Bootstrap 'success' green */
+}
+
+.message-container.info {
+    background-color: #007bff; /* Bootstrap 'primary' blue */
 }
 
 /* Tree Output Area */

@@ -32,8 +32,10 @@
     <div class="section-card">
       <h2>Generated Tree</h2>
       <div class="button-group-row">
-        <button id="showAsciiBtn" class="btn">Show ASCII</button>
-        <button id="showMarkdownBtn" class="btn">Show Markdown</button>
+        <div class="button-group-row-left">
+          <button id="showAsciiBtn" class="btn">Show ASCII</button>
+          <button id="showMarkdownBtn" class="btn">Show Markdown</button>
+        </div>
         <div class="button-group-row-right">
           <button id="loadTreeBtn" class="btn icon-btn" title="Load Tree">
             <i class="bi bi-folder"></i> Load
@@ -45,6 +47,7 @@
             <i class="bi bi-clipboardy"></i> Copy
           </button>
         </div>
+        <div id="messageContainer" class="message-container"></div>
       </div>
       <pre id="treeOutput"></pre>
     </div>

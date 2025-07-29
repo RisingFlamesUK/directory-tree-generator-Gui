@@ -27,6 +27,8 @@ A desktop application built with Electron, Node.js, HTML, CSS, and JavaScript th
     * Save the current tree structure as a JSON file to your local machine. This file retains the editable structure, including your custom additions/deletions/renames.
     * Load a previously saved JSON tree file into the interactive editor to continue working or view old structures.
 * **Copy to Clipboard:** Easily copy the generated ASCII or Markdown tree to your clipboard for use in documents, code comments, or messages.
+* **Non-blocking UI Messaging:** Provides instant user feedback with success, error, and informational messages without interrupting workflow.
+* **Ellipsis Support:** Correctly handles file and folder names containing "..." (three dots) in the generated tree.
 
 ## Technologies Used
 
