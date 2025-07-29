@@ -1,0 +1,19 @@
+{
+  "name": "directory-tree-generator-gui",
+  "version": "1.0.0",
+  "description": "A desktop application to generate and manage directory tree structures.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["electron", "directory", "tree", "generator", "gui", "file system", "utility"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

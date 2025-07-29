@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Tree Generator (Electron)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Directory Tree Generator</h1>
+
+    <div class="input-section">
+        <button id="selectFolderBtn">Select Folder</button>
+        <span id="selectedFolderPath">No folder selected</span>
+        <button id="generateTreeBtn">Generate Tree</button>
+
+        <br><br>
+
+        <label for="ignoredFolders">Ignore Folders (comma-separated):</label>
+        <input type="text" id="ignoredFolders" placeholder=".git, node_modules, .DS_Store">
+
+        <br>
+
+        <input type="checkbox" id="useGitignore">
+        <label for="useGitignore">Use .gitignore</label>
+    </div>
+
+    <div class="output-section">
+        <h2>Generated Tree</h2>
+        <div class="output-options">
+            <button id="showAsciiBtn">Show ASCII</button>
+            <button id="showMarkdownBtn">Show Markdown</button>
+            <button id="saveTreeBtn">Save Structure</button>
+            <button id="loadTreeBtn">Load Structure</button>
+        </div>
+        <pre id="treeOutput"></pre>
+    </div>
+
+    <div class="manual-edit-section">
+        <h2>Manual Tree Editor (JSON)</h2>
+        <textarea id="jsonEditor" rows="20" cols="80"></textarea>
+        <button id="applyJsonBtn">Apply Changes</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
