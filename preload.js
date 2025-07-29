@@ -47,5 +47,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
      */
     getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
     
+    /**
+     * Calls the main process to copy text to the system clipboard.
+     * @param {string} text - The text to copy.
+     * @returns {Promise<Object>} Resolves with a status object ({ success: boolean, message: string }).
+     */
     copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text)
 });

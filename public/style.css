@@ -1,226 +1,396 @@
-/* General Body and Container Styles */
+/* General Layout */
+/* Styles for the main body of the application */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #f0f2f5;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    /* Align to top */
-    min-height: 100vh;
+    background-color: #f0f2f5; /* Light grey background */
+    color: #333; /* Dark grey text color */
 }
 
+/* Main container for the application content */
 .container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    width: 100%;
     max-width: 900px;
-    /* Increased max-width */
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    /* Space at the bottom */
+    margin: 20px auto; /* Center the container horizontally */
+    background-color: #fff; /* White background for the card */
+    padding: 25px;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
 }
 
+/* Heading 1 style */
 h1 {
-    color: #2c3e50;
     text-align: center;
+    color: #2c3e50; /* Dark blue-grey for headings */
     margin-bottom: 30px;
-    font-size: 2.2em;
 }
 
-h2 {
-    color: #34495e;
-    margin-top: 0;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
-
-/* Section Card Styles */
+/* Styling for distinct sections/cards within the layout */
 .section-card {
-    background-color: #fdfdfd;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    background-color: #f9f9f9; /* Slightly off-white background */
     padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0; /* Light grey border */
 }
 
-/* Input Group and Button Styles */
+/* Heading 2 within section cards */
+.section-card h2 {
+    margin-top: 0;
+    color: #34495e; /* Slightly lighter blue-grey for subheadings */
+    border-bottom: 1px solid #e0e0e0; /* Separator line */
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Input Group & Buttons */
+/* Container for labels, inputs, and buttons that appear together */
 .input-group {
     display: flex;
-    align-items: center;
+    align-items: center; /* Vertically align items */
     margin-bottom: 15px;
-    gap: 10px;
-    /* Spacing between items */
+    gap: 10px; /* Space between items */
 }
 
-.path-display {
-    flex-grow: 1;
-    background-color: #e9ecef;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #555;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    white-space: nowrap;
-    /* Prevent button text from wrapping */
-}
-
-.btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-1px);
-}
-
-.btn:active {
-    background-color: #004085;
-    transform: translateY(0);
-}
-
-/* Styles for disabled buttons */
-.btn:disabled {
-    background-color: #cccccc;
-    /* Lighter grey background */
-    color: #666666;
-    /* Darker grey text/icon color */
-    cursor: not-allowed;
-    /* Change cursor to indicate no interaction */
-    opacity: 0.7;
-    /* Slightly reduce opacity */
-    transform: none;
-    /* Remove any hover/active transformations */
-    box-shadow: none;
-    /* Remove any box-shadows */
-}
-
-/* Ensure disabled icon buttons also follow this */
-.icon-btn:disabled i {
-    color: #666666;
-    /* Apply grey color to the icon specifically */
-}
-
-/* Optional: If you have a hover effect on disabled buttons, remove it */
-.btn:disabled:hover {
-    background-color: #cccccc;
-    /* Keep the grey background on hover */
-    transform: none;
-    /* Prevent any transform on hover */
-}
-
-/* Specific styles for ignore options */
-.ignore-options {
-    flex-wrap: wrap;
-    /* Allow wrapping on smaller screens */
-}
-
-.ignore-options label {
-    margin-right: 5px;
+/* Labels within input groups */
+.input-group label {
     font-weight: bold;
+    min-width: 150px; /* Ensures labels have a consistent minimum width */
 }
 
-.ignore-options input[type="text"] {
-    flex-grow: 1;
-    padding: 8px;
+/* Text input fields */
+.input-group input[type="text"] {
+    flex-grow: 1; /* Allows input to take up available space */
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    min-width: 150px;
-    /* Ensure input is not too small */
+    font-size: 1rem;
 }
 
-.ignore-options input[type="checkbox"] {
+/* Checkbox inputs */
+.input-group input[type="checkbox"] {
     margin-left: 10px;
-    transform: scale(1.2);
-    /* Make checkbox slightly larger */
 }
 
-/* Button group for tree display options (new row) */
+/* Styling for displaying folder paths */
+.path-display {
+    flex-grow: 1;
+    background-color: #e9ecef; /* Light grey background */
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace; /* Monospaced font for paths */
+    color: #555;
+    word-break: break-all; /* Allows long paths to break and wrap */
+}
+
+/* General button styling */
+.btn {
+    padding: 10px 18px;
+    background-color: #007bff; /* Primary blue color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease; /* Smooth hover effect */
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+/* Hover state for buttons */
+.btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Disabled state for buttons */
+.btn:disabled {
+    background-color: #cccccc; /* Light grey when disabled */
+    cursor: not-allowed;
+}
+
+/* Layout for rows of buttons, allowing wrapping */
 .button-group-row {
     display: flex;
-    flex-wrap: wrap;
-    /* Allow buttons to wrap */
+    justify-content: space-between; /* Space out items */
+    margin-bottom: 15px;
     gap: 10px;
-    /* Space between buttons */
-    margin-bottom: 20px;
-    justify-content: flex-start;
-    /* Align buttons to the start */
+    flex-wrap: wrap; /* Allows buttons to wrap to next line on smaller screens */
 }
 
+/* Right-aligned button group within a row */
 .button-group-row-right {
     display: flex;
-    flex-wrap: wrap;
-     /* Allow buttons to wrap */
-    flex-grow: 1;
     gap: 10px;
-     /* Space between buttons */
-    justify-content: flex-end;
-    /* Align buttons to the end */
 }
 
-
-/* Style for icon buttons */
+/* Styling for buttons that primarily use an icon */
 .icon-btn {
-    display: inline-flex;
-    /* Allows icon and text to sit nicely */
-    align-items: center;
-    /* Vertically center icon and text */
-    padding: 8px 15px;
-    /* Adjust padding for icon + text */
-}
-
-.icon-btn i {
-    margin-right: 8px;
-    /* Space between icon and text */
+    padding: 10px 12px; /* Slightly different padding for icons */
+    font-size: 1.1rem;
 }
 
 /* Tree Output Area */
+/* Styling for the pre-formatted text area displaying ASCII/Markdown tree */
 #treeOutput {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+    background-color: #282c34; /* Dark background (like a code editor) */
+    color: #abb2bf; /* Light grey text */
     padding: 15px;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    white-space: pre-wrap;
-    /* Preserve whitespace and wrap long lines */
-    word-break: break-all;
-    /* Break words if necessary to fit */
+    border-radius: 6px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Roboto Mono', monospace; /* Monospaced font for tree structure */
+    white-space: pre-wrap; /* Preserves whitespace and wraps lines */
+    word-break: break-all; /* Ensures long words/lines break */
+    min-height: 100px;
     max-height: 400px;
-    /* Limit height for scrolling */
-    overflow-y: auto;
-    /* Enable vertical scrolling */
-    font-size: 0.9em;
-    line-height: 1.4;
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #3a3f4a; /* Darker border */
 }
 
-/* JSON Editor */
-#jsonEditor {
-    width: 100%;
-    height: 300px;
-    /* Increased height */
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 15px;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    font-size: 0.9em;
-    resize: vertical;
-    /* Allow vertical resizing */
-    margin-bottom: 15px;
-    box-sizing: border-box;
-    /* Include padding in width calculation */
+/* Interactive Tree Editor */
+/* Main container for the editable tree display */
+.interactive-tree {
+    font-family: 'Cascadia Code', 'Fira Code', 'Roboto Mono', monospace;
+    font-size: 0.95rem;
+    padding: 10px 0; /* Padding top/bottom, 0 left/right as inner elements handle their own indent */
+    min-height: 150px;
+    max-height: 500px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    background-color: #333; /* Dark background for editor */
+    color: #eee; /* Light text for editor */
+    border-radius: 6px;
+    padding-left: 10px; /* Base padding for the whole editor, shifts everything slightly right */
+}
+
+/* Placeholder text for empty tree or initial state */
+.placeholder-text {
+    color: #aaa;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Error specific placeholder text */
+.placeholder-text.error {
+    color: #dc3545; /* Red for errors */
+    font-weight: bold;
+}
+
+
+/* --- Tree Node Styling --- */
+/* Each tree node, containing its visual line and its children's container */
+.tree-node {
+    /* No explicit padding-left here; indentation is handled by .node-indent divs */
+    padding-left: 0px; 
+}
+
+/* The visual line for a single node (icon, name, actions) */
+.node-line {
+    display: flex;
+    align-items: center; /* Vertically center items */
+    min-height: 28px; /* Ensure consistent height for each line to align vertically */
+    position: relative;
+    padding-right: 10px; /* Space on the right for action buttons */
+}
+
+/* Hover effect for node lines */
+.node-line:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Subtle white overlay on hover */
+}
+
+/* Indentation divs that create the horizontal spacing and vertical lines */
+.node-indent {
+    width: 20px; /* Fixed width for each indentation level */
+    height: 28px; /* Matches node-line height for vertical alignment */
+    position: relative;
+    /* `border-left` was removed here; vertical lines are now drawn using `::before` pseudo-element for more control. */
+}
+
+/* Vertical lines within indentation divs (drawn only when `has-line` class is present) */
+.node-indent.has-line::before {
+    content: ''; /* Required for pseudo-elements */
+    position: absolute;
+    left: 9px; /* Position to center the line within the 20px indent */
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #666; /* Color of the vertical connection lines */
+}
+
+
+/* Styling for the branch connectors (├── and └──) */
+.node-connector {
+    width: 25px; /* Space allocated for the connector characters */
+    text-align: right; /* Align the characters to the right of their allocated space */
+    color: #888; /* Grey color for the connectors */
+    font-weight: bold;
+    flex-shrink: 0; /* Prevent this element from shrinking */
+}
+
+/* Special styling for the conceptual root's display line */
+.root-display-line {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+    position: relative;
+    padding-right: 10px;
+    /* Ensure the root line starts flush left */
+    padding-left: 0;
+    margin-left: 0;
+}
+
+/* Hover effect for the root display line */
+.root-display-line:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+/* Styling for the toggle (caret) icon */
+.node-toggle {
+    width: 20px; /* Space for the caret icon */
+    text-align: center;
+    cursor: pointer;
+    color: #bbb; /* Light grey color for the caret */
+    flex-shrink: 0;
+}
+
+/* Class to hide the toggle icon when not needed (e.g., for files or empty folders) */
+.node-toggle.hidden {
+    visibility: hidden;
+}
+
+
+/* Styling for folder and file icons */
+.node-icon {
+    margin-right: 5px;
+    color: #ffd700; /* Default color for folder icons (gold/yellow) */
+    flex-shrink: 0;
+}
+
+/* Specific color for file icons, overriding the default node-icon color */
+.bi-file-earmark-fill {
+    color: #00a2ff !important; /* Blue for file icons */
+}
+
+/* Styling for the editable node name (input field or span) */
+.node-name {
+    flex-grow: 1; /* Allows the name to take up available space */
+    white-space: nowrap; /* Prevent name from wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Show ellipsis for truncated names */
+    cursor: pointer; /* Indicate it's clickable for editing */
+    padding: 0 2px; /* Small padding for better click target */
+    border-radius: 3px;
+}
+
+.node-name-input {
+    flex-grow: 1;
+    background-color: #444; /* Darker background for input */
+    color: #eee;
+    border: 1px solid #666;
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: inherit; /* Inherit monospaced font */
+    font-size: inherit; /* Inherit font size */
+    height: 24px; /* Match height of other elements in the line */
+    box-sizing: border-box; /* Include padding/border in element's total width/height */
+}
+
+
+/* Container for action buttons (add, delete) */
+.node-actions {
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 5px;
+    position: absolute; /* Position relative to .node-line */
+    right: 5px; /* Aligns to the right of the node line */
+    background-color: #333; /* Matches background of editor to create a "fade-in" effect */
+    padding-left: 10px; /* Ensures the hover transition looks smooth */
+}
+
+/* Show action buttons on hover of the node line or root line */
+.node-line:hover .node-actions,
+.root-display-line:hover .node-actions {
+    display: flex; /* Makes buttons visible on hover */
+}
+
+/* Styling for individual action buttons */
+.action-btn {
+    background: none;
+    border: none;
+    color: #bbb; /* Light grey for icons */
+    cursor: pointer;
+    font-size: 1.1em; 
+    padding: 4px;
+    border-radius: 3px;
+    transition: color 0.2s ease, background-color 0.2s ease; /* Smooth hover effects */
+    white-space: nowrap; /* Prevent icon from wrapping */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 28px; /* Fixed size for consistent hit area */
+    height: 28px;
+}
+
+/* Hover effects for generic action buttons */
+.action-btn:hover {
+    color: #fff; /* White icon on hover */
+    background-color: rgba(255, 255, 255, 0.2); /* Subtle background highlight */
+}
+
+/* Specific hover effect for 'add file' button */
+.action-btn.file:hover {
+    border-radius: 3px;
+    padding: 0 2px;
+    margin: 0;
+    background-color: #00a2ff !important; /* Blue background matching file icon */
+    color: white !important; /* White icon for contrast */
+}
+
+/* Specific hover effect for 'add folder' button */
+.action-btn.folder:hover {
+    background-color: #ffd700 !important; /* Gold background matching folder icon */
+    color: black !important; /* Black icon for contrast */
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+/* Styling for the delete button */
+.action-btn.delete {
+    color: #dc3545; /* Red for delete */
+}
+
+/* Hover effect for delete button */
+.action-btn.delete:hover {
+    color: #fff;
+    background-color: #dc3545; /* Solid red background on hover */
+}
+
+
+/* Container for a node's children */
+.node-children {
+    /* No padding-left here, as individual child nodes use .node-indent for their visual indentation */
+    padding-left: 0px; 
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out; /* Smooth collapse/expand transition */
+    overflow: hidden; /* Hide content when collapsed */
+}
+
+/* Styles when children are collapsed */
+.node-children.collapsed {
+    max-height: 0; /* Collapse by setting max-height to 0 */
+    opacity: 0; /* Fade out content */
+}
+
+/* Styles when children are expanded */
+.node-children:not(.collapsed) {
+    max-height: 1000px; /* A sufficiently large value to allow content to show */
+    opacity: 1; /* Fully visible */
+}
+
+/* Specific styling for the direct children of the interactive-tree (i.e., children of the conceptual root) */
+.interactive-tree > .node-children {
+    padding-left: 0px; /* Ensures these children also rely on .node-indent for their spacing */
+}
+
+/* Ensure the editor doesn't have an outer border that might interfere with lines */
+.interactive-tree {
+    border: none;
 }
