@@ -1,6 +1,6 @@
 {
   "name": "directory-tree-generator-gui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A desktop application to generate and manage directory tree structures.",
   "main": "main.js",
   "scripts": {

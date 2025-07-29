@@ -10,12 +10,28 @@ const showAsciiBtn = document.getElementById('showAsciiBtn'); // Button to displ
 const showMarkdownBtn = document.getElementById('showMarkdownBtn'); // Button to display Markdown tree
 const saveTreeBtn = document.getElementById('saveTreeBtn'); // Button to save tree to file
 const loadTreeBtn = document.getElementById('loadTreeBtn'); // Button to load tree from file
+const copyToClipboardBtn = document.getElementById('copyToClipboardBtn'); // Button to copy to clipboard
 const jsonEditor = document.getElementById('jsonEditor'); // Textarea for manual JSON editing
 const applyJsonBtn = document.getElementById('applyJsonBtn'); // Button to apply JSON changes
 
 // --- Global State Variables ---
 let currentTreeData = null; // Stores the currently generated or loaded tree structure as a JavaScript object.
-let currentRootFolderPath = null; // Stores the path of the last folder selected by the user.
+let currentRootFolderPath = null; // Store the path of the selected folder
+
+// --- Helper Function for Button State Management ---
+/**
+ * Enables or disables buttons related to tree output based on whether currentTreeData is present.
+ */
+function toggleTreeOutputButtons() {
+    const isDisabled = currentTreeData === null;
+    showAsciiBtn.disabled = isDisabled;
+    showMarkdownBtn.disabled = isDisabled;
+    saveTreeBtn.disabled = isDisabled;
+    copyToClipboardBtn.disabled = isDisabled;
+    // Note: loadTreeBtn and applyJsonBtn should always be enabled as they provide tree data.
+    // However, if jsonEditor.value is empty, applyJsonBtn will naturally fail JSON.parse.
+}
+
 
 // --- Tree Generation & Formatting Functions ---
 
@@ -29,23 +45,17 @@ let currentRootFolderPath = null; // Stores the path of the last folder selected
  */
 function generateAsciiTree(node, indent = '', isLast = true) {
     let output = '';
-    // Determine the prefix for the current node based on its position
     const prefix = indent + (isLast ? '└── ' : '├── ');
     output += prefix + node.name + '\n';
 
     if (node.children && node.children.length > 0) {
-        // Determine the indentation for children based on the current node's position
         const childIndent = indent + (isLast ? '    ' : '│   ');
-        // Create a sorted copy of children for consistent output order
         const sortedChildren = [...node.children].sort((a, b) => {
-            // Sort folders before files
             if (a.type === 'folder' && b.type !== 'folder') return -1;
             if (a.type !== 'folder' && b.type === 'folder') return 1;
-            // Then sort alphabetically by name
             return a.name.localeCompare(b.name);
         });
 
-        // Recursively generate ASCII for each child
         sortedChildren.forEach((child, index) => {
             output += generateAsciiTree(child, childIndent, index === sortedChildren.length - 1);
         });
@@ -66,15 +76,11 @@ function generateMarkdownTree(node, level = 0) {
     output += `${indent}- ${node.name}\n`;
 
     if (node.children && node.children.length > 0) {
-        // Create a sorted copy of children for consistent output order
         const sortedChildren = [...node.children].sort((a, b) => {
-            // Sort folders before files
             if (a.type === 'folder' && b.type !== 'folder') return -1;
             if (a.type !== 'folder' && b.type === 'folder') return 1;
-            // Then sort alphabetically by name
             return a.name.localeCompare(b.name);
         });
-        // Recursively generate Markdown for each child
         sortedChildren.forEach(child => {
             output += generateMarkdownTree(child, level + 1);
         });
@@ -90,26 +96,19 @@ function generateMarkdownTree(node, level = 0) {
  */
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Request initial settings from the Electron main process
         const settings = await window.electronAPI.getInitialSettings();
 
-        // Restore last selected folder path in the UI if available
         if (settings.lastSelectedFolder) {
             currentRootFolderPath = settings.lastSelectedFolder;
             selectedFolderPathSpan.textContent = settings.lastSelectedFolder;
         }
-        // Set the default ignore list in the input field
-        // Uses a hardcoded default if no defaultIgnoredFolders is provided by settings
         ignoredFoldersInput.value = settings.defaultIgnoredFolders || '.git, node_modules, .DS_Store';
 
     } catch (error) {
         console.error('Error loading initial settings:', error);
-        // Optionally, display an alert to the user if initial settings fail to load
-        // alert('Failed to load initial settings. Some features might not work as expected.');
     }
 
-    // Set initial content for the JSON editor with an example directory structure.
-    // This provides a starting point for users to understand the JSON format.
+    // Set initial JSON editor content (example structure)
     jsonEditor.value = JSON.stringify({
         name: "example_root",
         type: "folder",
@@ -126,151 +125,146 @@ document.addEventListener('DOMContentLoaded', async () => {
             { name: "package.json", type: "file", children: [] },
             { name: ".gitignore", type: "file", children: [] }
         ]
-    }, null, 2); // Pretty-print JSON with 2-space indentation
+    }, null, 2);
+
+    // Initial state: No tree present, so disable output buttons
+    currentTreeData = null; // Ensure it's null on load
+    treeOutput.textContent = 'Generate or load a tree to see the output.'; // Clear output area
+    toggleTreeOutputButtons();
 });
 
-/**
- * Handles the click event for the "Select Folder" button.
- * Triggers a native folder selection dialog via the main process.
- */
+// --- Event Listeners ---
+
 selectFolderBtn.addEventListener('click', async () => {
     try {
         const folderPath = await window.electronAPI.selectFolder();
         if (folderPath) {
             currentRootFolderPath = folderPath;
             selectedFolderPathSpan.textContent = folderPath;
-            // You could uncomment the line below to automatically generate the tree
-            // as soon as a folder is selected.
-            // generateTreeBtn.click();
         } else {
             selectedFolderPathSpan.textContent = 'No folder selected';
             currentRootFolderPath = null;
         }
     } catch (error) {
         console.error('Error selecting folder:', error);
-        alert('Error selecting folder. Please check the console for more details.');
+        alert('Error selecting folder. Check console for details.');
     }
 });
 
-/**
- * Handles the click event for the "Generate Tree" button.
- * Collects ignore settings and requests tree generation from the main process.
- */
 generateTreeBtn.addEventListener('click', async () => {
     if (!currentRootFolderPath) {
-        alert('Please select a folder first before generating the tree.');
+        alert('Please select a folder first.');
         return;
     }
 
-    // Get the manually entered ignore folders from the input field
     const ignoredFoldersText = ignoredFoldersInput.value.trim();
-    // Split the string by commas, trim whitespace from each item, and filter out any empty strings
-    const ignoreList = ignoredFoldersText
-        ? ignoredFoldersText.split(',').map(item => item.trim()).filter(item => item !== '')
-        : []; // If the input is empty, ensure an empty array is passed
-
-    // Get the state of the "Use .gitignore" checkbox
+    const ignoreList = ignoredFoldersText ? ignoredFoldersText.split(',').map(item => item.trim()).filter(item => item !== '') : [];
     const useGitignore = useGitignoreCheckbox.checked;
 
     try {
-        // Call the Electron main process to generate the tree, passing the collected options
         const tree = await window.electronAPI.generateTree(currentRootFolderPath, ignoreList, useGitignore);
-        currentTreeData = tree; // Store the newly generated tree data
-        jsonEditor.value = JSON.stringify(currentTreeData, null, 2); // Update the JSON editor with the new tree
-        treeOutput.textContent = generateAsciiTree(currentTreeData); // Display the tree in ASCII format by default
+        currentTreeData = tree;
+        jsonEditor.value = JSON.stringify(currentTreeData, null, 2);
+        treeOutput.textContent = generateAsciiTree(currentTreeData); // Default to ASCII
+        toggleTreeOutputButtons(); // Enable buttons after tree is generated
     } catch (error) {
         console.error('Error generating tree:', error);
-        alert(`An error occurred while generating the tree: ${error.message}. Please check the console.`);
+        alert(`An error occurred while generating the tree: ${error.message}`);
+        currentTreeData = null; // Clear tree data on error
+        treeOutput.textContent = `Error generating tree: ${error.message}`; // Display error in output
+        toggleTreeOutputButtons(); // Disable buttons on error
     }
 });
 
-/**
- * Handles the click event for the "Show ASCII" button.
- * Displays the current tree data in ASCII art format.
- */
 showAsciiBtn.addEventListener('click', () => {
-    if (currentTreeData) {
+    if (currentTreeData) { // This check is now somewhat redundant if buttons are properly disabled
         treeOutput.textContent = generateAsciiTree(currentTreeData);
     } else {
-        alert('No tree data available. Please generate or load a tree first.');
+        alert('No tree generated yet. Please generate or load one first.');
     }
 });
 
-/**
- * Handles the click event for the "Show Markdown" button.
- * Displays the current tree data in Markdown list format.
- */
 showMarkdownBtn.addEventListener('click', () => {
-    if (currentTreeData) {
+    if (currentTreeData) { // This check is now somewhat redundant if buttons are properly disabled
         treeOutput.textContent = generateMarkdownTree(currentTreeData);
     } else {
-        alert('No tree data available. Please generate or load a tree first.');
+        alert('No tree generated yet. Please generate or load one first.');
     }
 });
 
-/**
- * Handles the click event for the "Save Structure" button.
- * Prompts the user to save the current tree data as a JSON file.
- */
 saveTreeBtn.addEventListener('click', async () => {
-    if (!currentTreeData) {
-        alert('No tree data to save. Please generate or load a tree first.');
+    if (!currentTreeData) { // This check is now somewhat redundant if buttons are properly disabled
+        alert('No tree to save. Please generate or load one first.');
         return;
     }
 
     try {
-        // Call the main process to open a save dialog and save the tree data
         const result = await window.electronAPI.saveTreeFile(currentTreeData);
         if (result.success) {
             alert(result.message);
-        } else {
-            // User cancelled the save dialog; no alert shown for cancellation by default.
-            // If you want to notify on cancel, uncomment the line below:
-            // alert(result.message);
         }
+        // No change to currentTreeData on save, so no need to toggle buttons
     } catch (error) {
-        console.error('Error saving tree to file:', error);
-        alert(`An error occurred while saving the tree: ${error.message}. Please check the console.`);
+        console.error('Error saving tree:', error);
+        alert(`An error occurred while saving the tree: ${error.message}`);
     }
 });
 
-/**
- * Handles the click event for the "Load Structure" button.
- * Prompts the user to select and load a JSON file representing a tree structure.
- */
 loadTreeBtn.addEventListener('click', async () => {
     try {
-        // Call the main process to open an open dialog and load tree data from a file
         const result = await window.electronAPI.loadTreeFile();
         if (result.success) {
-            currentTreeData = result.tree; // Update the current tree data with the loaded content
-            jsonEditor.value = JSON.stringify(currentTreeData, null, 2); // Update the JSON editor
-            treeOutput.textContent = generateAsciiTree(currentTreeData); // Display the loaded tree in ASCII format
+            currentTreeData = result.tree;
+            jsonEditor.value = JSON.stringify(currentTreeData, null, 2);
+            treeOutput.textContent = generateAsciiTree(currentTreeData); // Display ASCII by default
             alert('Tree loaded successfully!');
-        } else {
-            // User cancelled the load dialog; no alert shown for cancellation by default.
-            // If you want to notify on cancel, uncomment the line below:
-            // alert(result.message);
+            toggleTreeOutputButtons(); // Enable buttons after tree is loaded
         }
+        // If cancelled, result.success is false, and currentTreeData remains unchanged.
+        // No need to disable buttons if a tree was already present.
     } catch (error) {
         alert(`Error loading JSON file: ${error.message}. Please ensure it's a valid JSON tree structure.`);
         console.error('Error loading file:', error);
+        // If loading failed, but there was a previous tree, keep it.
+        // If currentTreeData was null and load failed, it remains null.
+        // So, no explicit toggle needed here unless you want to clear on *any* load attempt failure.
     }
 });
 
-/**
- * Handles the click event for the "Apply Changes" button for the JSON editor.
- * Parses the JSON in the editor and updates the displayed tree.
- */
+copyToClipboardBtn.addEventListener('click', async () => {
+    const textToCopy = treeOutput.textContent;
+    if (!textToCopy || currentTreeData === null) { // Added explicit check for currentTreeData
+        alert('Nothing to copy. Please generate or load a tree first.');
+        return;
+    }
+    try {
+        const result = await window.electronAPI.copyToClipboard(textToCopy);
+        if (result.success) {
+            alert(result.message);
+        } else {
+            alert(`Failed to copy to clipboard: ${result.message}`);
+        }
+    } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        alert(`An unexpected error occurred while copying to clipboard: ${error.message}`);
+    }
+});
+
 applyJsonBtn.addEventListener('click', () => {
     try {
-        // Attempt to parse the JSON content from the editor textarea
         const editedJson = JSON.parse(jsonEditor.value);
         currentTreeData = editedJson; // Update the application's current tree data
         treeOutput.textContent = generateAsciiTree(currentTreeData); // Re-render the tree display with the new data
-        alert('Tree structure updated successfully from JSON editor!');
+        alert('Tree structure updated from JSON editor!');
+        toggleTreeOutputButtons(); // Enable buttons after applying JSON
     } catch (error) {
-        alert('Invalid JSON syntax. Please correct the JSON in the editor.');
-        console.error('Error applying JSON from editor:', error);
+        alert('Invalid JSON. Please correct the syntax.');
+        console.error('Error applying JSON:', error);
+        // If JSON parsing fails, currentTreeData might become invalid or remain as it was.
+        // To be safe, if parsing fails, you might consider clearing it and disabling buttons
+        // or just rely on the existing currentTreeData if it was previously valid.
+        // For now, we assume if parsing fails, currentTreeData is NOT updated,
+        // so the previous state of buttons remains. If you want to disable on invalid JSON,
+        // you'd set currentTreeData = null; toggleTreeOutputButtons(); here.
     }
 });

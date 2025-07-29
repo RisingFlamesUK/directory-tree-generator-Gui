@@ -1,40 +1,26 @@
-// --- Module Imports ---
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron'); // Add 'clipboard'
 const path = require('path');
-const fs = require('fs').promises; // Using promise-based file system methods
-const os = require('os'); // For getting the user's home directory
+const fs = require('fs').promises;
+const os = require('os');
 
-// --- Configuration and Constants ---
-// Path to store application-specific user data (e.g., settings)
 const userDataPath = app.getPath('userData');
 const settingsFilePath = path.join(userDataPath, 'app-settings.json');
 
-// --- Helper Functions - Settings Management ---
-
-/**
- * Loads application settings from a JSON file.
- * If the file does not exist, an empty object is returned.
- * @returns {Promise<Object>} A promise that resolves with the settings object.
- */
+// Function to load settings
 async function loadSettings() {
     try {
         const data = await fs.readFile(settingsFilePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
         if (error.code === 'ENOENT') {
-            // Settings file not found, which is normal on first run
-            return {};
+            return {}; // File not found, return empty settings
         }
         console.error('Error loading settings:', error);
-        return {}; // Return empty settings on other errors
+        return {};
     }
 }
 
-/**
- * Saves application settings to a JSON file.
- * @param {Object} settings - The settings object to save.
- * @returns {Promise<void>} A promise that resolves when settings are saved.
- */
+// Function to save settings
 async function saveSettings(settings) {
     try {
         await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2));
@@ -43,15 +29,11 @@ async function saveSettings(settings) {
     }
 }
 
-// --- Helper Functions - File System Traversal ---
-
 /**
- * Parses a .gitignore file content into an array of patterns for exact matching.
- * This implementation is simplified and primarily handles direct folder/file names.
- * For full .gitignore spec (wildcards, negation, etc.), a dedicated library
- * like 'ignore' would be required.
- * @param {string} rootPath - The path to the directory potentially containing a .gitignore file.
- * @returns {Promise<string[]>} A promise that resolves with an array of ignore patterns.
+ * Parses a .gitignore file content into an array of patterns.
+ * Handles comments, empty lines, and basic glob patterns (for exact matches here).
+ * For full .gitignore spec (wildcards, negation, etc.), a dedicated library like 'ignore' would be better.
+ * For this simple case, we'll just extract exact names to ignore.
  */
 async function getGitignorePatterns(rootPath) {
     const gitignorePath = path.join(rootPath, '.gitignore');
@@ -60,51 +42,50 @@ async function getGitignorePatterns(rootPath) {
         const content = await fs.readFile(gitignorePath, 'utf8');
         content.split('\n').forEach(line => {
             line = line.trim();
-            // Ignore comments and empty lines
             if (line.startsWith('#') || line === '') {
-                return;
+                return; // Ignore comments and empty lines
             }
+            // For simplicity, we'll only consider exact folder/file names for now.
+            // A more robust solution would use a glob matching library.
             // Remove leading slashes as we match against basename
             if (line.startsWith('/')) {
                 line = line.substring(1);
             }
-            // Remove trailing slashes (indicates directory) as basename won't have it
+            // If it ends with a slash, it's a directory
             if (line.endsWith('/')) {
                 line = line.slice(0, -1);
             }
             patterns.push(line);
         });
     } catch (error) {
-        // Ignore if .gitignore doesn't exist (ENOENT)
-        if (error.code !== 'ENOENT') {
+        if (error.code !== 'ENOENT') { // Ignore if .gitignore doesn't exist
             console.warn(`Error reading .gitignore in ${rootPath}: ${error.message}`);
         }
     }
-    return patterns;
+    return patterns; // Return unique patterns
 }
 
-/**
- * Recursively reads a directory and builds a tree structure.
- * Applies a given ignore list and optionally integrates .gitignore patterns.
- * @param {string} dirPath - The path of the directory to scan.
- * @param {string[]} ignoreList - An array of folder/file names to explicitly ignore.
- * @param {boolean} useGitignore - True if .gitignore rules should be applied.
- * @returns {Promise<Object|null>} A promise that resolves with the tree node object,
- * or null if the directory itself is ignored.
- */
+
+// Helper function to recursively read directory (modified for ignore list and .gitignore logic)
 async function readDirectoryRecursive(dirPath, ignoreList = [], useGitignore = false) {
     const name = path.basename(dirPath);
 
-    // Combine explicit ignore list with .gitignore patterns if enabled
-    let combinedIgnoreList = new Set(ignoreList);
+    // Combine ignore lists if .gitignore is used
+    let combinedIgnoreList = new Set(ignoreList); // Use a Set for efficient lookups and uniqueness
 
     if (useGitignore) {
-        // Get .gitignore patterns for the current directory
-        const gitignorePatterns = await getGitignorePatterns(dirPath);
+        // For a true recursive .gitignore, you'd load .gitignore files at each subdirectory level.
+        // This simplified example currently gets the .gitignore patterns only for the 'rootPath'
+        // passed into getGitignorePatterns. If you want .gitignore patterns to be applied
+        // from subdirectories, the logic here would need to be more complex, potentially
+        // re-calling getGitignorePatterns for 'dirPath' within the recursion.
+        // For this example, we'll assume the provided 'getGitignorePatterns' function
+        // is designed to operate on a single root for efficiency.
+        const gitignorePatterns = await getGitignorePatterns(dirPath); // Get patterns for THIS directory
         gitignorePatterns.forEach(pattern => combinedIgnoreList.add(pattern));
     }
 
-    // Check if the current directory name should be ignored
+    // Check if the current directory name is in the ignore list
     if (combinedIgnoreList.has(name)) {
         return null; // Ignore this folder and its contents
     }
@@ -113,26 +94,27 @@ async function readDirectoryRecursive(dirPath, ignoreList = [], useGitignore = f
     try {
         stats = await fs.stat(dirPath);
     } catch (error) {
-        // Handle inaccessible files/folders
         console.warn(`Could not access ${dirPath}: ${error.message}`);
         return { name: `${name} (inaccessible)`, type: 'error' };
     }
 
-    // Create the node for the current directory/file
     const node = { name, type: stats.isDirectory() ? 'folder' : 'file', children: [] };
 
     if (stats.isDirectory()) {
         const entries = await fs.readdir(dirPath);
         for (const entry of entries) {
-            // Check if individual entry (file/folder) should be ignored
+            // Check if individual entry (file/folder) is in the ignore list
             if (combinedIgnoreList.has(entry)) {
                 continue; // Skip this entry
             }
 
             const entryPath = path.join(dirPath, entry);
-            // Recursively read child node, passing the (potentially updated) combined ignore list
+            // Pass the same combined ignore list down.
+            // If you want subfolders to have their own .gitignore files that *add* to
+            // the ignore rules, you'd need to modify `readDirectoryRecursive` to
+            // load a new .gitignore for each subfolder path and merge its rules.
             const childNode = await readDirectoryRecursive(entryPath, Array.from(combinedIgnoreList), useGitignore);
-            if (childNode) {
+            if (childNode) { // Only add if not ignored
                 node.children.push(childNode);
             }
         }
@@ -140,40 +122,27 @@ async function readDirectoryRecursive(dirPath, ignoreList = [], useGitignore = f
     return node;
 }
 
-// --- Electron Window Management ---
 
-/**
- * Creates the main Electron browser window.
- */
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 1000,
         height: 800,
         webPreferences: {
-            // Preload script to securely expose Node.js functionalities to the renderer
             preload: path.join(__dirname, 'preload.js'),
-            // Disable Node.js integration directly in renderer for security
             nodeIntegration: false,
-            // Isolate JavaScript contexts to prevent prototype pollution and other attacks
             contextIsolation: true,
         }
     });
 
-    // Load the HTML file for the user interface
     mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
 
-    // Open the DevTools for debugging (uncomment in development)
+    // Open the DevTools.
     // mainWindow.webContents.openDevTools();
 }
 
-// --- Electron App Lifecycle Events ---
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
 app.whenReady().then(() => {
     createWindow();
 
-    // On macOS, recreate a window when the dock icon is clicked and no other windows are open.
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
@@ -181,9 +150,6 @@ app.whenReady().then(() => {
     });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
@@ -191,16 +157,10 @@ app.on('window-all-closed', () => {
 });
 
 // --- IPC Main Handlers ---
-// These handlers facilitate communication between the renderer process (UI)
-// and the main process (Node.js backend).
 
-/**
- * Handles the request to open a native folder selection dialog.
- * @returns {Promise<string|null>} A promise that resolves with the selected folder path, or null if cancelled.
- */
+// Handle folder selection dialog
 ipcMain.handle('select-folder', async () => {
     const settings = await loadSettings();
-    // Set default path to last selected folder or user's home directory
     const defaultPath = settings.lastSelectedFolder || os.homedir();
 
     const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -212,21 +172,13 @@ ipcMain.handle('select-folder', async () => {
         return null;
     } else {
         const selectedPath = filePaths[0];
-        // Save the newly selected folder as the last used path
+        // Save the last selected folder
         await saveSettings({ ...settings, lastSelectedFolder: selectedPath });
         return selectedPath;
     }
 });
 
-/**
- * Handles the request to generate the directory tree.
- * @param {Electron.IpcMainEvent} event - The IPC event object.
- * @param {string} folderPath - The root path of the folder to scan.
- * @param {string[]} ignoreList - An array of folder/file names to ignore.
- * @param {boolean} useGitignore - Whether to incorporate .gitignore rules.
- * @returns {Promise<Object>} A promise that resolves with the generated tree structure.
- * @throws {Error} If the folder path is missing or tree generation fails.
- */
+// Handle tree generation request (now accepts ignoreList and useGitignore)
 ipcMain.handle('generate-tree', async (event, folderPath, ignoreList, useGitignore) => {
     if (!folderPath) {
         throw new Error('Folder path is required.');
@@ -240,14 +192,7 @@ ipcMain.handle('generate-tree', async (event, folderPath, ignoreList, useGitigno
     }
 });
 
-/**
- * Handles the request to save the current tree structure to a JSON file.
- * Opens a native save file dialog.
- * @param {Electron.IpcMainEvent} event - The IPC event object.
- * @param {Object} treeData - The tree data object to save.
- * @returns {Promise<Object>} A promise that resolves with success status and message.
- * @throws {Error} If saving the file fails.
- */
+// Handle saving tree to a file
 ipcMain.handle('save-tree-file', async (event, treeData) => {
     const { filePath } = await dialog.showSaveDialog({
         title: 'Save Directory Tree',
@@ -264,15 +209,10 @@ ipcMain.handle('save-tree-file', async (event, treeData) => {
             throw new Error(`Failed to save file: ${error.message}`);
         }
     }
-    return { success: false, message: 'Save cancelled' }; // User cancelled the dialog
+    return { success: false, message: 'Save cancelled' };
 });
 
-/**
- * Handles the request to load a tree structure from a JSON file.
- * Opens a native open file dialog.
- * @returns {Promise<Object>} A promise that resolves with success status and the loaded tree, or cancellation status.
- * @throws {Error} If loading or parsing the file fails.
- */
+// Handle loading tree from a file
 ipcMain.handle('load-tree-file', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
         properties: ['openFile'],
@@ -289,17 +229,26 @@ ipcMain.handle('load-tree-file', async () => {
             throw new Error(`Failed to load file: ${error.message}`);
         }
     }
-    return { success: false, message: 'Load cancelled' }; // User cancelled the dialog
+    return { success: false, message: 'Load cancelled' };
 });
 
-/**
- * Handles the request to get initial application settings for the renderer process.
- * @returns {Promise<Object>} A promise that resolves with an object containing initial settings.
- */
+// IPC handler to get initial settings (last selected folder)
 ipcMain.handle('get-initial-settings', async () => {
     const settings = await loadSettings();
     return {
         lastSelectedFolder: settings.lastSelectedFolder || '',
+        // Add default ignored folders here
         defaultIgnoredFolders: settings.defaultIgnoredFolders || '.git, node_modules, .DS_Store'
     };
+});
+
+// New IPC handler for copying text to clipboard
+ipcMain.handle('copy-to-clipboard', (event, text) => {
+    try {
+        clipboard.writeText(text);
+        return { success: true, message: 'Content copied to clipboard!' };
+    } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        return { success: false, message: `Failed to copy: ${error.message}` };
+    }
 });

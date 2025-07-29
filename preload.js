@@ -45,5 +45,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
      * This includes things like the last selected folder and default ignore patterns.
      * @returns {Promise<Object>} Resolves with an object containing initial settings.
      */
-    getInitialSettings: () => ipcRenderer.invoke('get-initial-settings')
+    getInitialSettings: () => ipcRenderer.invoke('get-initial-settings'),
+    
+    copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text)
 });

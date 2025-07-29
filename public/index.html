@@ -1,47 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Directory Tree Generator (Electron)</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directory Tree Generator (Electron)</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
+  <div class="container">
     <h1>Directory Tree Generator</h1>
 
-    <div class="input-section">
-        <button id="selectFolderBtn">Select Folder</button>
-        <span id="selectedFolderPath">No folder selected</span>
-        <button id="generateTreeBtn">Generate Tree</button>
-
-        <br><br>
-
+    <div class="section-card">
+      <h2>Folder Selection</h2>
+      <div class="input-group">
+        <button id="selectFolderBtn" class="btn">Select Folder</button>
+        <span id="selectedFolderPath" class="path-display">No folder selected</span>
+      </div>
+      <div class="input-group ignore-options">
         <label for="ignoredFolders">Ignore Folders (comma-separated):</label>
         <input type="text" id="ignoredFolders" placeholder=".git, node_modules, .DS_Store">
-
-        <br>
-
         <input type="checkbox" id="useGitignore">
         <label for="useGitignore">Use .gitignore</label>
+        <button id="generateTreeBtn" class="btn">Generate Tree</button>
+      </div>
     </div>
 
-    <div class="output-section">
-        <h2>Generated Tree</h2>
-        <div class="output-options">
-            <button id="showAsciiBtn">Show ASCII</button>
-            <button id="showMarkdownBtn">Show Markdown</button>
-            <button id="saveTreeBtn">Save Structure</button>
-            <button id="loadTreeBtn">Load Structure</button>
+    <div class="section-card">
+      <h2>Generated Tree</h2>
+      <div class="button-group-row">
+        <button id="showAsciiBtn" class="btn">Show ASCII</button>
+        <button id="showMarkdownBtn" class="btn">Show Markdown</button>
+        <div class="button-group-row-right">
+          <button id="loadTreeBtn" class="btn icon-btn" title="Load Tree">
+            <i class="fas fa-folder-open"></i> Load
+          </button>
+          <button id="saveTreeBtn" class="btn icon-btn" title="Save Tree">
+            <i class="fas fa-save"></i> Save
+          </button>
+          <button id="copyToClipboardBtn" class="btn icon-btn" title="Copy to Clipboard">
+            <i class="fas fa-copy"></i> Copy
+          </button>
         </div>
-        <pre id="treeOutput"></pre>
+      </div>
+      <pre id="treeOutput"></pre>
     </div>
 
-    <div class="manual-edit-section">
-        <h2>Manual Tree Editor (JSON)</h2>
-        <textarea id="jsonEditor" rows="20" cols="80"></textarea>
-        <button id="applyJsonBtn">Apply Changes</button>
+    <div class="section-card">
+      <h2>Manual Tree Editor (JSON)</h2>
+      <textarea id="jsonEditor"></textarea>
+      <button id="applyJsonBtn" class="btn">Apply Changes</button>
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <script src="../preload.js"></script>
+  <script src="./script.js"></script>
 </body>
+
 </html>
