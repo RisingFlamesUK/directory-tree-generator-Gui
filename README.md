@@ -52,7 +52,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/RisingFlames/directory-tree-generator-Gui.git](https://github.com/RisingFlames/directory-tree-generator-Gui.git)
+    git clone [https://github.com/RisingFlamesUK/directory-tree-generator-Gui.git](https://github.com/RisingFlamesUK/directory-tree-generator-Gui.git)
     cd directory-tree-generator-Gui
     ```
     (If you don't have a GitHub repo yet, replace `git clone ...` with creating the directory and copying files)
