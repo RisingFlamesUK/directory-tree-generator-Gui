@@ -4,7 +4,7 @@ A desktop application built with Electron, Node.js, HTML, CSS, and JavaScript th
 
 ## Screenshot
 
-![Directory Tree Generator GUI Screenshot](assets/screenshot.png)
+![Directory Tree Generator GUI Screenshot](assets/main-app-screenshot.png)
 
 ## Features
 
